@@ -1,7 +1,9 @@
 import React, {useState} from 'react';
 import {Text, View, TextInput, Button} from 'react-native';
 import {keyGenerator} from './keyGenerator';
-import {chiperGenerator} from './chiperGenerator';
+import {cipherGenerator} from './cipherGenerator';
+import {cipherDecryptor} from './cipherDecryptor';
+
 // import {useNavigation} from '@react-navigation/native';
 const DesApp = () => {
   const [K_msg, setalert] = useState('');
@@ -10,7 +12,10 @@ const DesApp = () => {
   const [text, setText] = useState('');
   const [keyinput, setKeyinput] = useState('');
   const [key, setKey] = useState('');
+  const [E_msg, set_E_msg] = useState('');
+  const [E_msg_copy, set_E_msg_copy] = useState('');
   let Generatedkeys = null;
+  let encrypted_text;
   const handleKeyChange = () => {
     if (key.length < 8) {
       setalert('you need 8 characters for your key ');
@@ -19,7 +24,9 @@ const DesApp = () => {
       if (text.length > 0) {
         setalert('');
         Generatedkeys = keyGenerator(key);
-        chiperGenerator(text, Generatedkeys);
+        encrypted_text = cipherGenerator(text, Generatedkeys);
+        set_E_msg(encrypted_text);
+        set_E_msg_copy(E_msg);
       } else {
         setalert('you have to enter a text');
       }
@@ -28,6 +35,10 @@ const DesApp = () => {
       //setText('');
       //setKey('');
     }
+  };
+
+  const handledecryptChange = () => {
+    cipherDecryptor(E_msg, key);
   };
 
   const handleContentSizeChange = (event: {
@@ -41,6 +52,8 @@ const DesApp = () => {
       <Text style={{fontSize: 30, fontWeight: 'bold'}}>
         DES Encryption / Decryption
       </Text>
+
+      <Text style={{fontSize: 20, fontWeight: 'bold'}}>Encryption </Text>
 
       <TextInput
         placeholder="Enter Text"
@@ -59,8 +72,17 @@ const DesApp = () => {
       />
 
       <Text>{K_msg}</Text>
-      <Button title="Generate Chiper" onPress={handleKeyChange} />
-      <Text>{}</Text>
+      <Button title="Generate Cipher" onPress={handleKeyChange} />
+      <Text>{E_msg}</Text>
+      <Text style={{fontSize: 20, fontWeight: 'bold'}}>Decryption </Text>
+      <TextInput
+        placeholder={E_msg}
+        value={E_msg_copy}
+        onChangeText={E_msg_copy => set_E_msg_copy(E_msg_copy)}
+        onContentSizeChange={handleContentSizeChange}
+        style={{height: inputHeight, borderColor: 'gray', borderWidth: 1}}
+      />
+      <Button title="Decrypt Cipher" onPress={handledecryptChange} />
     </View>
   );
 };

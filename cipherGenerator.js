@@ -73,10 +73,17 @@ F_permutation = [
   4, 6, 14, 23, 2, 11, 9, 1, 17, 21, 25,
 ];
 
-function chiperGenerator(text, key) {
+IP_N1 = [
+  53, 37, 9, 29, 21, 28, 20, 18, 31, 1, 40, 2, 12, 24, 11, 23, 57, 0, 62, 60,
+  51, 58, 43, 56, 14, 25, 30, 41, 7, 47, 8, 52, 3, 38, 54, 13, 34, 50, 16, 39,
+  46, 5, 61, 45, 48, 49, 36, 15, 55, 27, 35, 42, 6, 22, 33, 10, 19, 59, 17, 44,
+  63, 4, 32, 26,
+];
+
+function cipherGenerator(text, key) {
   let encrypted_text = '';
   let encrypted_text_hex = '';
-
+  let encrypted_chunk_permutated = '';
   while (text.length % 8 !== 0) {
     text += 'X';
   }
@@ -124,7 +131,7 @@ function chiperGenerator(text, key) {
       Ln = Chunktext_IP_left;
       Rn = Chunktext_IP_right;
 
-      for (let d = 1; d <= 2; d++) {
+      for (let d = 1; d <= 16; d++) {
         Rn_expanded = '';
         Rn_Xored = '';
         Rn_S1_boxed = '';
@@ -142,7 +149,7 @@ function chiperGenerator(text, key) {
               ? '1'
               : '0';
         }
-        console.log(' vhgvgjh' + Rn_Xored);
+
         //S1
         row_number_S1_box = parseInt(Rn_Xored[0].concat(Rn_Xored[5]), 2);
         column_number_S1_box = parseInt(Rn_Xored.substring(1, 5), 2);
@@ -207,24 +214,28 @@ function chiperGenerator(text, key) {
         keynumber++;
       }
 
-      encrypted_chunk = Ln + Rn;
-      // console.log(encrypted_chunk);
-    }
+      encrypted_chunk = Rn + Ln;
 
-    encrypted_text += encrypted_chunk;
+      for (let i = 0; i < IP_N1.length; i++) {
+        encrypted_chunk_permutated += encrypted_chunk[IP_N1[i]];
+      }
+    }
+    //
   }
-  //console.log(encrypted_text);
+
+  encrypted_text += encrypted_chunk_permutated;
+  console.log(encrypted_text);
   for (let i = 0; i < encrypted_text.length; i += 4) {
     //console.log(encrypted_text.slice(i, i + chunkSize));
     let hexDigit = parseInt(encrypted_text.slice(i, i + 4), 2).toString(16);
     encrypted_text_hex += hexDigit;
   }
-  console.log(encrypted_text_hex);
+  // console.log(encrypted_text_hex);
   //console.log(encrypted_text);
   return encrypted_text_hex;
 }
 
-export {chiperGenerator};
+export {cipherGenerator};
 
 /*
     Rn_S1_boxed = parseInt(S1[row_number_S1_box][column_number_S1_box])
