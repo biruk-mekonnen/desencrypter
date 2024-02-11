@@ -1,96 +1,64 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-import {StyleSheet, Text, View, TextInput, Button} from 'react-native';
 import React, {useState} from 'react';
+import {Text, View, TextInput, Button} from 'react-native';
 import {keyGenerator} from './keyGenerator';
-import Buffer from 'react-native-buffer';
-export default function App() {
+import {chiperGenerator} from './chiperGenerator';
+// import {useNavigation} from '@react-navigation/native';
+const DesApp = () => {
   const [K_msg, setalert] = useState('');
-  const [keyflag, setflag] = useState();
+  const [keyflag, setflag] = useState(0);
+  const [inputHeight, setInputHeight] = useState(40);
   const [text, setText] = useState('');
-  const [message, setmessage] = useState('');
+  const [keyinput, setKeyinput] = useState('');
+  const [key, setKey] = useState('');
   let Generatedkeys = null;
-
-  function handelkey(text) {
-    if (text.length < 8) {
-      setalert('add more characters ');
+  const handleKeyChange = () => {
+    if (keyinput.length < 8) {
+      setalert('you need 8 characters for your key ');
       setflag(0);
     }
-    if (text.length == 8) {
+    if (text.length == 0) {
+      setalert('their is no text to encrypt');
+    }
+    if (keyinput.length == 8) {
       setalert('');
-      Generatedkeys = keyGenerator(text);
-      setflag(1);
+      setKey(keyinput);
+      Generatedkeys = keyGenerator(keyinput);
+      chiperGenerator(text, Generatedkeys);
     }
-  }
+  };
 
-  function handelencrypt(keyflag) {
-    if (keyflag !== 1) {
-      setalert('you have to generate the key first');
-    }
-  }
-
-  const userInput = 'Your input text here';
-  const buffer = Buffer.from(userInput, 'utf8');
-
-  const chunkSize = 8;
-  for (let i = 0; i < buffer.length; i += chunkSize) {
-    const chunk = buffer.slice(i, i + chunkSize);
-    // Process the chunk of 8 characters here
-    console.log(chunk.toString('utf8'));
-  }
+  const handleContentSizeChange = (event: {
+    nativeEvent: {contentSize: {height: React.SetStateAction<number>}};
+  }) => {
+    setInputHeight(event.nativeEvent.contentSize.height);
+  };
 
   return (
-    <View style={styles.container}>
+    <View>
+      <Text style={{fontSize: 30, fontWeight: 'bold'}}>
+        DES Encryption / Decryption
+      </Text>
+
       <TextInput
-        style={styles.input}
-        minLength={8}
-        maxLength={8}
-        placeholder="Enter secret key"
-        onChangeText={text => setText(text)} // Update the state variable with the onChangeText event
+        placeholder="Enter Text"
         value={text}
+        onChangeText={setText}
+        onContentSizeChange={handleContentSizeChange}
+        style={{height: inputHeight, borderColor: 'gray', borderWidth: 1}}
+        multiline={true}
       />
-      <Button title="Generate Keys" onPress={() => handelkey(text)} />
-      <Text style={styles.msg}>{K_msg}</Text>
+
       <TextInput
-        style={styles.input}
-        minLength={8}
+        placeholder="Enter secret key"
+        value={keyinput}
+        onChangeText={keyinput => setKeyinput(keyinput)}
         maxLength={8}
-        placeholder="Enter alert"
-        onChangeText={message => setmessage(message)} // Update the state variable with the onChangeText event
-        value={message}
       />
-      <Button title="encrypt message" onPress={() => handelencrypt(keyflag)} />
+
+      <Text>{K_msg}</Text>
+      <Button title="Generate Chiper" onPress={handleKeyChange} />
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 50,
-    paddingHorizontal: 10,
-  },
-  input: {
-    margin: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: 'black',
-  },
-  text: {
-    margin: 10,
-    fontSize: 20,
-  },
-  msg: {
-    color: 'red',
-  },
-});
-
-
-
-
-
-
-
+export default DesApp;
