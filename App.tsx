@@ -12,18 +12,21 @@ const DesApp = () => {
   const [key, setKey] = useState('');
   let Generatedkeys = null;
   const handleKeyChange = () => {
-    if (keyinput.length < 8) {
+    if (key.length < 8) {
       setalert('you need 8 characters for your key ');
       setflag(0);
-    }
-    if (text.length == 0) {
-      setalert('their is no text to encrypt');
-    }
-    if (keyinput.length == 8) {
-      setalert('');
-      setKey(keyinput);
-      Generatedkeys = keyGenerator(keyinput);
-      chiperGenerator(text, Generatedkeys);
+    } else if (key.length == 8) {
+      if (text.length > 0) {
+        setalert('');
+        Generatedkeys = keyGenerator(key);
+        chiperGenerator(text, Generatedkeys);
+      } else {
+        setalert('you have to enter a text');
+      }
+      // setKey(key);
+
+      //setText('');
+      //setKey('');
     }
   };
 
@@ -42,7 +45,7 @@ const DesApp = () => {
       <TextInput
         placeholder="Enter Text"
         value={text}
-        onChangeText={setText}
+        onChangeText={text => setText(text)}
         onContentSizeChange={handleContentSizeChange}
         style={{height: inputHeight, borderColor: 'gray', borderWidth: 1}}
         multiline={true}
@@ -50,13 +53,14 @@ const DesApp = () => {
 
       <TextInput
         placeholder="Enter secret key"
-        value={keyinput}
-        onChangeText={keyinput => setKeyinput(keyinput)}
+        value={key}
+        onChangeText={key => setKey(key)}
         maxLength={8}
       />
 
       <Text>{K_msg}</Text>
       <Button title="Generate Chiper" onPress={handleKeyChange} />
+      <Text>{}</Text>
     </View>
   );
 };

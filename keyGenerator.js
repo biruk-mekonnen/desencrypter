@@ -157,6 +157,8 @@ function keyGenerator(text) {
     }
   }
 
+  //console.log('key in e ' + finalkeys[`index${1}`]);
+
   return finalkeys;
 }
 

@@ -68,76 +68,171 @@ S8 = [
   [7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8],
   [2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11],
 ];
+F_permutation = [
+  0, 5, 15, 8, 26, 12, 27, 10, 30, 20, 29, 31, 7, 19, 3, 18, 13, 24, 28, 16, 22,
+  4, 6, 14, 23, 2, 11, 9, 1, 17, 21, 25,
+];
 
 function chiperGenerator(text, key) {
-  let chunkinbinary = '';
-  let Chunktext_IP = '';
+  let encrypted_text = '';
+  let encrypted_text_hex = '';
 
   while (text.length % 8 !== 0) {
     text += 'X';
   }
 
+  //console.log(text);
   const buffertext = Buffer.from(text, 'utf8');
-
+  //console.log(buffertext.length);
   const chunkSize = 8;
-  for (let i = 0; i < buffertext.length; i += chunkSize) {
-    const chunk = buffertext.slice(i, i + chunkSize);
 
-    let chunkString = chunk.toString('utf8');
+  for (let a = 0; a < buffertext.length; a += chunkSize) {
+    let chunkString = '';
+    let chunkinbinary = '';
+    let Chunktext_IP = '';
+    let encrypted_chunk = '';
 
-    for (let i = 0; i < chunkString.length; i++) {
-      let charCode = chunkString.charCodeAt(i).toString(2);
+    const chunk = buffertext.slice(a, a + chunkSize);
+
+    chunkString = chunk.toString('utf8');
+    // console.log(chunkString);
+    for (let b = 0; b < chunkString.length; b++) {
+      let charCode = chunkString.charCodeAt(b).toString(2);
 
       let paddedChar = '0'.repeat(8 - charCode.length) + charCode;
       chunkinbinary += paddedChar;
     }
+    // console.log(chunkinbinary);
     intialpermutation(chunkinbinary);
     function intialpermutation(chunkinbinary) {
-      for (let i = 0; i < IP.length; i++) {
-        Chunktext_IP += chunkinbinary[IP[i]];
+      for (let c = 0; c < IP.length; c++) {
+        Chunktext_IP += chunkinbinary[IP[c]];
       }
       SPlitChunk(Chunktext_IP);
     }
 
     function SPlitChunk(Chunktext_IP) {
-      Chunktext_IP_left = Chunktext_IP.slice(0, 32);
-      Chunktext_IP_right = Chunktext_IP.slice(32, 64);
-      //console.log('32 bit left key: ' + Chunktext_IP_left);
-      //console.log('32 bit right key: ' + Chunktext_IP_right);
+      let Chunktext_IP_left = Chunktext_IP.slice(0, 32);
+      let Chunktext_IP_right = Chunktext_IP.slice(32, 64);
 
       Rounds(Chunktext_IP_left, Chunktext_IP_right);
     }
 
     function Rounds(Chunktext_IP_left, Chunktext_IP_right) {
+      // console.log(Rn);
       let keynumber = 1;
       Ln = Chunktext_IP_left;
       Rn = Chunktext_IP_right;
-      Rn_expanded = '';
-      Rn_Xored = '';
 
-      for (i = 1; i <= 1; i++) {
+      for (let d = 1; d <= 2; d++) {
+        Rn_expanded = '';
+        Rn_Xored = '';
+        Rn_S1_boxed = '';
+        Rn_F_out = '';
+        Ln_temp = Ln;
         Ln = Rn;
-        for (let i = 0; i < E_bit.length; i++) {
-          Rn_expanded += Rn[E_bit[i]];
-        }
-        //console.log(Rn_expanded);
-        //console.log(key[`index${j}`]);
 
-        for (let i = 0; i < 48; i++) {
+        for (let e = 0; e < E_bit.length; e++) {
+          Rn_expanded += Rn[E_bit[e]];
+        }
+
+        for (let f = 0; f < 48; f++) {
           Rn_Xored +=
-            (Rn_expanded[i] === '1') ^ (key[`index${keynumber}`][i] === '1')
+            (Rn_expanded[f] === '1') ^ (key[`index${keynumber}`][f] === '1')
               ? '1'
               : '0';
         }
-        // console.log(Rn_Xored);
+        console.log(' vhgvgjh' + Rn_Xored);
+        //S1
+        row_number_S1_box = parseInt(Rn_Xored[0].concat(Rn_Xored[5]), 2);
+        column_number_S1_box = parseInt(Rn_Xored.substring(1, 5), 2);
+        //S2
+        row_number_S2_box = parseInt(Rn_Xored[6].concat(Rn_Xored[11]), 2);
+        column_number_S2_box = parseInt(Rn_Xored.substring(7, 11), 2);
+        //S3
+        row_number_S3_box = parseInt(Rn_Xored[12].concat(Rn_Xored[17]), 2);
+        column_number_S3_box = parseInt(Rn_Xored.substring(13, 17), 2);
+        //S4
+        row_number_S4_box = parseInt(Rn_Xored[18].concat(Rn_Xored[23]), 2);
+        column_number_S4_box = parseInt(Rn_Xored.substring(19, 23), 2);
+        //S5
+        row_number_S5_box = parseInt(Rn_Xored[24].concat(Rn_Xored[29]), 2);
+        column_number_S5_box = parseInt(Rn_Xored.substring(25, 29), 2);
+        //S6
+        row_number_S6_box = parseInt(Rn_Xored[30].concat(Rn_Xored[35]), 2);
+        column_number_S6_box = parseInt(Rn_Xored.substring(31, 35), 2);
+        //S7
+        row_number_S7_box = parseInt(Rn_Xored[36].concat(Rn_Xored[41]), 2);
+        column_number_S7_box = parseInt(Rn_Xored.substring(37, 41), 2);
+
+        //S8
+        row_number_S8_box = parseInt(Rn_Xored[42].concat(Rn_Xored[47]), 2);
+        column_number_S8_box = parseInt(Rn_Xored.substring(43, 47), 2);
+
+        let Rn_S1_boxed =
+          S1[row_number_S1_box][column_number_S1_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S2[row_number_S2_box][column_number_S2_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S3[row_number_S3_box][column_number_S3_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S4[row_number_S4_box][column_number_S4_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S5[row_number_S5_box][column_number_S5_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S6[row_number_S6_box][column_number_S6_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S7[row_number_S7_box][column_number_S7_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S8[row_number_S8_box][column_number_S8_box]
+            .toString(2)
+            .padStart(4, '0');
+
+        for (let g = 0; g < F_permutation.length; g++) {
+          Rn_F_out += Rn_S1_boxed[F_permutation[g]];
+        }
+        Rn = '';
+
+        for (let h = 0; h < 32; h++) {
+          Rn += (Rn_F_out[h] === '1') ^ (Ln_temp[h] === '1') ? '1' : '0';
+        }
+
         keynumber++;
       }
+
+      encrypted_chunk = Ln + Rn;
+      // console.log(encrypted_chunk);
     }
 
-    // console.log(Chunktext_IP);
+    encrypted_text += encrypted_chunk;
   }
-
-  // Process the chunk of 8 characters here
+  //console.log(encrypted_text);
+  for (let i = 0; i < encrypted_text.length; i += 4) {
+    //console.log(encrypted_text.slice(i, i + chunkSize));
+    let hexDigit = parseInt(encrypted_text.slice(i, i + 4), 2).toString(16);
+    encrypted_text_hex += hexDigit;
+  }
+  console.log(encrypted_text_hex);
+  //console.log(encrypted_text);
+  return encrypted_text_hex;
 }
 
 export {chiperGenerator};
+
+/*
+    Rn_S1_boxed = parseInt(S1[row_number_S1_box][column_number_S1_box])
+          .concat(parseInt(S2[row_number_S2_box][column_number_S2_box]))
+          .concat(parseInt(S3[row_number_S3_box][column_number_S3_box]))
+          .concat(parseInt(S4[row_number_S4_box][column_number_S4_box]))
+          .concat(parseInt(S5[row_number_S5_box][column_number_S5_box]))
+          .concat(parseInt(S6[row_number_S6_box][column_number_S6_box]))
+          .concat(parseInt(S7[row_number_S7_box][column_number_S7_box]))
+          .concat(parseInt(S8[row_number_S8_box][column_number_S8_box]));
+*/
