@@ -1,16 +1,22 @@
 import {Buffer} from '@craftzdog/react-native-buffer';
-
 IP = [
-  17, 54, 11, 37, 51, 58, 2, 60, 33, 41, 47, 35, 45, 52, 24, 5, 38, 21, 43, 42,
-  3, 32, 18, 16, 63, 53, 0, 14, 34, 62, 23, 29, 9, 10, 50, 28, 36, 19, 61, 31,
-  15, 40, 59, 8, 30, 49, 46, 48, 6, 1, 57, 4, 44, 12, 56, 7, 55, 22, 13, 27, 25,
-  39, 26, 20,
+  58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38,
+  30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8, 57, 49, 41, 33, 25, 17, 9, 1,
+  59, 51, 43, 35, 27, 19, 11, 3, 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39,
+  31, 23, 15, 7,
+];
+
+IP_N1 = [
+  40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47, 15, 55, 23, 63, 31, 38, 6, 46, 14,
+  54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29, 36, 4, 44, 12, 52, 20, 60, 28,
+  35, 3, 43, 11, 51, 19, 59, 27, 34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9,
+  49, 17, 57, 25,
 ];
 
 E_bit = [
-  31, 0, 1, 2, 3, 4, 3, 4, 5, 6, 7, 8, 7, 8, 9, 10, 11, 12, 11, 12, 13, 14, 15,
-  16, 15, 16, 17, 18, 19, 20, 19, 20, 21, 22, 23, 24, 23, 24, 25, 26, 27, 28,
-  27, 28, 29, 30, 31, 1,
+  32, 1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 8, 9, 10, 11, 12, 13, 12, 13, 14, 15, 16,
+  17, 16, 17, 18, 19, 20, 21, 20, 21, 22, 23, 24, 25, 24, 25, 26, 27, 28, 29,
+  28, 29, 30, 31, 32, 1,
 ];
 
 const S1 = [
@@ -69,24 +75,150 @@ S8 = [
   [2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11],
 ];
 F_permutation = [
-  0, 5, 15, 8, 26, 12, 27, 10, 30, 20, 29, 31, 7, 19, 3, 18, 13, 24, 28, 16, 22,
-  4, 6, 14, 23, 2, 11, 9, 1, 17, 21, 25,
+  16, 7, 20, 21, 29, 12, 28, 17, 1, 15, 23, 26, 5, 18, 31, 10, 2, 8, 24, 14, 32,
+  27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25,
 ];
 
-IP_N1 = [
-  53, 37, 9, 29, 21, 28, 20, 18, 31, 1, 40, 2, 12, 24, 11, 23, 57, 0, 62, 60,
-  51, 58, 43, 56, 14, 25, 30, 41, 7, 47, 8, 52, 3, 38, 54, 13, 34, 50, 16, 39,
-  46, 5, 61, 45, 48, 49, 36, 15, 55, 27, 35, 42, 6, 22, 33, 10, 19, 59, 17, 44,
-  63, 4, 32, 26,
-];
 function cipherDecryptor(E_msg, keys) {
   let E_msg_binary = '';
-  for (let i = 0; i < E_msg.length; i++) {
-    let hexDigit = parseInt(E_msg[i], 16).toString(2);
-    while (hexDigit.length < 4) {
-      hexDigit = '0' + hexDigit;
+  let E_msg_unpermutated = '';
+  let encrypted_chunk_permutated = '';
+  //create a buffer to process text as blocks
+  const bufferE_msg = Buffer.from(E_msg, 'utf8');
+  const chunkSize = 16;
+  // create a loop to iterate on each block
+  for (let a = 0; a < bufferE_msg.length; a += chunkSize) {
+    let chunkString = '';
+    let chunkinbinary = '';
+    let Chunktext_IP = '';
+    let encrypted_chunk = '';
+
+    //select the block to be processed
+    const chunk = bufferE_msg.slice(a, a + chunkSize);
+    chunkString = chunk.toString('utf8');
+
+    //convert the encrypted msg from hex into binary format and save it into E_msg_binary
+    for (let i = 0; i < chunkString.length; i++) {
+      let hexDigit = parseInt(chunkString[i], 16).toString(2);
+      while (hexDigit.length < 4) {
+        hexDigit = '0' + hexDigit;
+      }
+      E_msg_binary += hexDigit;
     }
-    E_msg_binary += hexDigit;
+
+    console.log('enc in binary ' + E_msg_binary);
+
+    // reverse The final permutation done by using the IP table
+    for (let i = 0; i < IP.length; i++) {
+      E_msg_unpermutated += E_msg_binary[IP[i] - 1];
+    }
+    console.log('unpermuted ' + E_msg_unpermutated);
+    //console.log(E_msg_unpermutated);
+    //call the function slplit the text
+    SPlitChunk(E_msg_unpermutated);
+
+    // split the bits in half and swap the left and right sides
+
+    function SPlitChunk(E_msg_unpermutated) {
+      let Chunktext_E_msg_left = E_msg_unpermutated.slice(0, 32);
+      let Chunktext_E_msg_right = E_msg_unpermutated.slice(32, 64);
+      // call the reverse rounding funciotn
+      R_Rounds(Chunktext_E_msg_left, Chunktext_E_msg_right);
+    }
+
+    function R_Rounds(Chunktext_E_msg_left, Chunktext_E_msg_right) {
+      let keynumber = 16;
+      Ln = Chunktext_E_msg_left;
+      Rn = Chunktext_E_msg_right;
+      //console.log('right ' + Rn);
+      for (let d = 1; d <= 16; d++) {
+        Rn_expanded = '';
+        Rn_Xored = '';
+        Rn_S1_boxed = '';
+        Rn_F_out = '';
+        Ln_temp = Ln;
+        Ln = Rn;
+        for (let e = 0; e < E_bit.length; e++) {
+          Rn_expanded += Rn[E_bit[e] - 1];
+        }
+
+        for (let f = 0; f < 48; f++) {
+          Rn_Xored +=
+            (Rn_expanded[f] === '1') ^ (keys[`index${keynumber}`][f] === '1')
+              ? '1'
+              : '0';
+        }
+        //  console.log('xored ' + Rn_Xored);
+        //console.log(`index${keynumber}`);
+
+        //S1
+        row_number_S1_box = parseInt(Rn_Xored[0].concat(Rn_Xored[5]), 2);
+        column_number_S1_box = parseInt(Rn_Xored.substring(1, 5), 2);
+        //S2
+        row_number_S2_box = parseInt(Rn_Xored[6].concat(Rn_Xored[11]), 2);
+        column_number_S2_box = parseInt(Rn_Xored.substring(7, 11), 2);
+        //S3
+        row_number_S3_box = parseInt(Rn_Xored[12].concat(Rn_Xored[17]), 2);
+        column_number_S3_box = parseInt(Rn_Xored.substring(13, 17), 2);
+        //S4
+        row_number_S4_box = parseInt(Rn_Xored[18].concat(Rn_Xored[23]), 2);
+        column_number_S4_box = parseInt(Rn_Xored.substring(19, 23), 2);
+        //S5
+        row_number_S5_box = parseInt(Rn_Xored[24].concat(Rn_Xored[29]), 2);
+        column_number_S5_box = parseInt(Rn_Xored.substring(25, 29), 2);
+        //S6
+        row_number_S6_box = parseInt(Rn_Xored[30].concat(Rn_Xored[35]), 2);
+        column_number_S6_box = parseInt(Rn_Xored.substring(31, 35), 2);
+        //S7
+        row_number_S7_box = parseInt(Rn_Xored[36].concat(Rn_Xored[41]), 2);
+        column_number_S7_box = parseInt(Rn_Xored.substring(37, 41), 2);
+
+        //S8
+        row_number_S8_box = parseInt(Rn_Xored[42].concat(Rn_Xored[47]), 2);
+        column_number_S8_box = parseInt(Rn_Xored.substring(43, 47), 2);
+
+        let Rn_S1_boxed =
+          S1[row_number_S1_box][column_number_S1_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S2[row_number_S2_box][column_number_S2_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S3[row_number_S3_box][column_number_S3_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S4[row_number_S4_box][column_number_S4_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S5[row_number_S5_box][column_number_S5_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S6[row_number_S6_box][column_number_S6_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S7[row_number_S7_box][column_number_S7_box]
+            .toString(2)
+            .padStart(4, '0') +
+          S8[row_number_S8_box][column_number_S8_box]
+            .toString(2)
+            .padStart(4, '0');
+
+        for (let g = 0; g < F_permutation.length; g++) {
+          Rn_F_out += Rn_S1_boxed[F_permutation[g] - 1];
+        }
+        Rn = '';
+        for (let h = 0; h < 32; h++) {
+          Rn += (Rn_F_out[h] === '1') ^ (Ln_temp[h] === '1') ? '1' : '0';
+        }
+        keynumber--;
+      }
+      encrypted_chunk = Rn + Ln;
+
+      for (let i = 0; i < IP_N1.length; i++) {
+        encrypted_chunk_permutated += encrypted_chunk[IP_N1[i] - 1];
+      }
+      console.log('decrypted binary ' + encrypted_chunk_permutated);
+    }
   }
 }
 export {cipherDecryptor};
