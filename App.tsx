@@ -45,8 +45,12 @@ const DesApp = () => {
   };
 
   const handledecryptChange = () => {
-    decrypted_text = cipherDecryptor(E_msg, keyforDEC, pad);
-    setdecrypted_msg(decrypted_text);
+    if (!Generatedkeys) {
+      setalert('you need to create a cipher first');
+    } else {
+      decrypted_text = cipherDecryptor(E_msg, keyforDEC, pad);
+      setdecrypted_msg(decrypted_text);
+    }
   };
 
   const handleContentSizeChange = (event: {
