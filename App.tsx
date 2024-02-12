@@ -15,6 +15,7 @@ const DesApp = () => {
   const [E_msg, set_E_msg] = useState('');
   const [E_msg_copy, set_E_msg_copy] = useState('');
   const [keyforDEC, setketforDEC] = useState(null);
+  const [pad, setpadding] = useState(0);
 
   let Generatedkeys: null = null;
   let encrypted_text;
@@ -30,6 +31,7 @@ const DesApp = () => {
         const {Encrypted, padding} = cipherGenerator(text, Generatedkeys);
 
         set_E_msg(Encrypted);
+        setpadding(padding);
         set_E_msg_copy(E_msg);
       } else {
         setalert('you have to enter a text');
@@ -42,7 +44,7 @@ const DesApp = () => {
   };
 
   const handledecryptChange = () => {
-    cipherDecryptor(E_msg, keyforDEC);
+    cipherDecryptor(E_msg, keyforDEC, pad);
   };
 
   const handleContentSizeChange = (event: {

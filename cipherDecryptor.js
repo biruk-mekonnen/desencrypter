@@ -79,20 +79,19 @@ F_permutation = [
   27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25,
 ];
 
-function cipherDecryptor(E_msg, keys) {
-  let E_msg_binary = '';
-  let E_msg_unpermutated = '';
-  let encrypted_chunk_permutated = '';
+function cipherDecryptor(E_msg, keys, padding) {
+  let decrypted_text = '';
+
   //create a buffer to process text as blocks
   const bufferE_msg = Buffer.from(E_msg, 'utf8');
   const chunkSize = 16;
   // create a loop to iterate on each block
   for (let a = 0; a < bufferE_msg.length; a += chunkSize) {
     let chunkString = '';
-    let chunkinbinary = '';
-    let Chunktext_IP = '';
-    let encrypted_chunk = '';
-
+    let decrypted_chunk_permutated = '';
+    let decrypted_chunk = '';
+    let E_msg_binary = '';
+    let E_msg_unpermutated = '';
     //select the block to be processed
     const chunk = bufferE_msg.slice(a, a + chunkSize);
     chunkString = chunk.toString('utf8');
@@ -105,14 +104,12 @@ function cipherDecryptor(E_msg, keys) {
       }
       E_msg_binary += hexDigit;
     }
-
-    console.log('enc in binary ' + E_msg_binary);
-
+    // console.log(E_msg_binary);
     // reverse The final permutation done by using the IP table
     for (let i = 0; i < IP.length; i++) {
       E_msg_unpermutated += E_msg_binary[IP[i] - 1];
     }
-    console.log('unpermuted ' + E_msg_unpermutated);
+
     //console.log(E_msg_unpermutated);
     //call the function slplit the text
     SPlitChunk(E_msg_unpermutated);
@@ -212,13 +209,16 @@ function cipherDecryptor(E_msg, keys) {
         }
         keynumber--;
       }
-      encrypted_chunk = Rn + Ln;
+      decrypted_chunk = Rn + Ln;
 
       for (let i = 0; i < IP_N1.length; i++) {
-        encrypted_chunk_permutated += encrypted_chunk[IP_N1[i] - 1];
+        decrypted_chunk_permutated += decrypted_chunk[IP_N1[i] - 1];
       }
-      console.log('decrypted binary ' + encrypted_chunk_permutated);
     }
+    console.log('decrypted binary ' + decrypted_chunk_permutated);
+
+    decrypted_text += decrypted_chunk_permutated;
   }
+  console.log(padding);
 }
 export {cipherDecryptor};

@@ -82,8 +82,10 @@ function cipherGenerator(text, key) {
   let encrypted_text = '';
   let encrypted_text_hex = '';
   let encrypted_chunk_permutated = '';
+  let textspadding = 0;
   while (text.length % 8 !== 0) {
     text += 'X';
+    textspadding++;
   }
 
   const buffertext = Buffer.from(text, 'utf8');
@@ -106,6 +108,7 @@ function cipherGenerator(text, key) {
       let paddedChar = '0'.repeat(8 - charCode.length) + charCode;
       chunkinbinary += paddedChar;
     }
+
     console.log('orignal ' + chunkinbinary);
 
     intialpermutation(chunkinbinary);
@@ -216,12 +219,12 @@ function cipherGenerator(text, key) {
       }
       //-----------------------------------------------------------------------
       encrypted_chunk = Rn + Ln;
-      console.log('pre premuted ' + encrypted_chunk);
+      //console.log('pre premuted ' + encrypted_chunk);
 
       for (let i = 0; i < IP_N1.length; i++) {
         encrypted_chunk_permutated += encrypted_chunk[IP_N1[i] - 1];
       }
-      console.log('encrypted ' + encrypted_chunk_permutated);
+      //  console.log('encrypted ' + encrypted_chunk_permutated);
     }
     //
   }
@@ -233,7 +236,7 @@ function cipherGenerator(text, key) {
     encrypted_text_hex += hexDigit;
   }
 
-  return {Encrypted: encrypted_text_hex, padding: text.length % 8};
+  return {Encrypted: encrypted_text_hex, padding: textspadding};
 }
 
 export {cipherGenerator};
