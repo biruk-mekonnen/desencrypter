@@ -219,6 +219,13 @@ function cipherDecryptor(E_msg, keys, padding) {
 
     decrypted_text += decrypted_chunk_permutated;
   }
-  console.log(padding);
+
+  const asciiString = decrypted_text
+    .match(/.{8}/g) // Split the binary string into 8-bit segments
+    .map(byte => String.fromCharCode(parseInt(byte, 2))) // Convert each 8-bit segment to its ASCII character
+    .join('');
+  const orignalmessage = asciiString.slice(0, -padding);
+
+  return orignalmessage;
 }
 export {cipherDecryptor};

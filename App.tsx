@@ -16,9 +16,10 @@ const DesApp = () => {
   const [E_msg_copy, set_E_msg_copy] = useState('');
   const [keyforDEC, setketforDEC] = useState(null);
   const [pad, setpadding] = useState(0);
+  const [decrypted_msg, setdecrypted_msg] = useState('');
 
   let Generatedkeys: null = null;
-  let encrypted_text;
+  let decrypted_text;
   const handleKeyChange = () => {
     if (key.length < 8) {
       setalert('you need 8 characters for your key ');
@@ -44,7 +45,8 @@ const DesApp = () => {
   };
 
   const handledecryptChange = () => {
-    cipherDecryptor(E_msg, keyforDEC, pad);
+    decrypted_text = cipherDecryptor(E_msg, keyforDEC, pad);
+    setdecrypted_msg(decrypted_text);
   };
 
   const handleContentSizeChange = (event: {
@@ -89,6 +91,7 @@ const DesApp = () => {
         style={{height: inputHeight, borderColor: 'gray', borderWidth: 1}}
       />
       <Button title="Decrypt Cipher" onPress={handledecryptChange} />
+      <Text>{decrypted_msg}</Text>
     </View>
   );
 };
