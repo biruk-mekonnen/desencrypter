@@ -1,3 +1,8 @@
+//this code takes in the generates subkeys and text message and generate an encrypted text
+//it also padds the text with X so each block can be 64 bits
+//it returns an encrypted text and number of padding added
+//
+//buffer is used to process each block at a time
 import {Buffer} from '@craftzdog/react-native-buffer';
 const IP = [
   58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38,
@@ -77,82 +82,92 @@ const F_permutation = [
   16, 7, 20, 21, 29, 12, 28, 17, 1, 15, 23, 26, 5, 18, 31, 10, 2, 8, 24, 14, 32,
   27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25,
 ];
-
+//main function
 function cipherGenerator(text, key) {
-  let encrypted_text = '';
-  let encrypted_text_hex = '';
-  let encrypted_chunk_permutated = '';
-  let textspadding = 0;
+  let encrypted_text = ''; //variable to hold final encrypted text
+  let encrypted_text_hex = ''; //variable to hold final encrypted text in hex format
+  let encrypted_chunk_permutated = ''; //variable to hold the final encrypted  output of a block
+  let textspadding = 0; //variable to hold padding
+  //while loop is used to check the amount of padded the text requires and adds it
+  //all counts how many paddings are added
   while (text.length % 8 !== 0) {
     text += 'X';
     textspadding++;
   }
-
+  //create a buffer text
   const buffertext = Buffer.from(text, 'utf8');
-
+  //set one chunk to be 8 char since its 64 bit block
   const chunkSize = 8;
 
+  //this for loop iterates from block to block
+  //onces a block has been encrypted it loops until all blokcs are encrypted
   for (let a = 0; a < buffertext.length; a += chunkSize) {
-    let chunkString = '';
-    let chunkinbinary = '';
-    let Chunktext_IP = '';
-    let encrypted_chunk = '';
+    let chunkString = ''; //variable to hold block to be processed
+    let chunkinbinary = ''; //variable to hold block in binary
+    let Chunktext_IP = ''; //variable to hold block after initiatl permute
+    let encrypted_chunk = ''; //variable to hold encrypted block before final permute
 
+    //slice the current block to be processed
     const chunk = buffertext.slice(a, a + chunkSize);
-
+    //convert it to string
     chunkString = chunk.toString('utf8');
-
+    //you will notice the variables all have different names
+    //lot of for loops inside so it created some bugs thats why
+    //
+    //for loop that to convert to binary and padd each charater to be 8 bits(so its adds to 64)
     for (let b = 0; b < chunkString.length; b++) {
       let charCode = chunkString.charCodeAt(b).toString(2);
 
       let paddedChar = '0'.repeat(8 - charCode.length) + charCode;
       chunkinbinary += paddedChar;
     }
-
-    console.log('orignal ' + chunkinbinary);
-
+    // call function to do intial permute
     intialpermutation(chunkinbinary);
+    //funciton that does inital permute
     function intialpermutation(chunkinbinary) {
       for (let c = 0; c < IP.length; c++) {
-        Chunktext_IP += chunkinbinary[IP[c] - 1];
+        Chunktext_IP += chunkinbinary[IP[c] - 1]; //save initial permute into variable
       }
-
+      //call function that splits the text into
       SPlitChunk(Chunktext_IP);
     }
-
+    //funciton that splits the text into
     function SPlitChunk(Chunktext_IP) {
       let Chunktext_IP_left = Chunktext_IP.slice(0, 32);
       let Chunktext_IP_right = Chunktext_IP.slice(32, 64);
-
+      //call a function tat does roudning
       Rounds(Chunktext_IP_left, Chunktext_IP_right);
     }
-
+    //the rounding funciton
     function Rounds(Chunktext_IP_left, Chunktext_IP_right) {
-      let keynumber = 1;
-      Ln = Chunktext_IP_left;
-      Rn = Chunktext_IP_right;
+      let keynumber = 1; //the key number is for the sub keys generated to iterate for each round
+      Ln = Chunktext_IP_left; //save the left chunk in a new variable easier to view as Ln
+      Rn = Chunktext_IP_right; //save the right chunk in a new variable easier to view as Rn
 
+      //the festial network loop
+      //does the 16 rounds
       for (let d = 1; d <= 16; d++) {
-        Rn_expanded = '';
-        Rn_Xored = '';
-        Rn_S1_boxed = '';
-        Rn_F_out = '';
-        Ln_temp = Ln;
-        Ln = Rn;
+        Rn_expanded = ''; //vairiable to hold the expanded bits from E_bit table
+        Rn_Xored = ''; //variable to hold the Xored bits with the key
+        Rn_S1_boxed = ''; //varible to hold the S_boxed bits from the Sbox table
+        Rn_F_out = ''; //variable to hold the out put of the Function
+        Ln_temp = Ln; //create a temp variable to hold Ln-1 bits to eventually Xor with output of the festial network
+        Ln = Rn; // create the new Ln as Rn according to the algorithm
 
-        // start of rounding function
+        // start of the F(k,R)function
         //-------------------------------------------------------------------------------------------------
+        //expand the right side using E_bit table
         for (let e = 0; e < E_bit.length; e++) {
           Rn_expanded += Rn[E_bit[e] - 1];
         }
-
+        //Xor the expanded right side with the first round subkey
         for (let f = 0; f < 48; f++) {
           Rn_Xored +=
             (Rn_expanded[f] === '1') ^ (key[`index${keynumber}`][f] === '1')
               ? '1'
               : '0';
         }
-
+        //the following devids the right side 48 bits into 6 bits and  holds the values for the 6 bits in a row and column variables according to the algorithm
         //S1
         row_number_S1_box = parseInt(Rn_Xored[0].concat(Rn_Xored[5]), 2);
         column_number_S1_box = parseInt(Rn_Xored.substring(1, 5), 2);
@@ -178,7 +193,7 @@ function cipherGenerator(text, key) {
         //S8
         row_number_S8_box = parseInt(Rn_Xored[42].concat(Rn_Xored[47]), 2);
         column_number_S8_box = parseInt(Rn_Xored.substring(43, 47), 2);
-
+        //the following uses the row and column corrdinates to set the value from the S_ box table and concats all 4bit groups to form 32 bit S_box output
         let Rn_S1_boxed =
           S1[row_number_S1_box][column_number_S1_box]
             .toString(2)
@@ -205,37 +220,36 @@ function cipherGenerator(text, key) {
             .toString(2)
             .padStart(4, '0');
 
+        //do final permutation to the S_box output
         for (let g = 0; g < F_permutation.length; g++) {
           Rn_F_out += Rn_S1_boxed[F_permutation[g] - 1];
         }
-        Rn = '';
-
+        Rn = ''; //reset Rn for the next round iteration
+        //Xor the output from the Final permutation (P-BOX) table witht the Left side of the bits
         for (let h = 0; h < 32; h++) {
-          Rn += (Rn_F_out[h] === '1') ^ (Ln_temp[h] === '1') ? '1' : '0';
+          Rn += (Rn_F_out[h] === '1') ^ (Ln_temp[h] === '1') ? '1' : '0'; //save the result in Rn which will be the new rounds input Rn
         }
-        //  console.log('Rn after round ' + d + ' ' + Rn);
 
+        //incrment the key so next subkey can be used in the next round
         keynumber++;
       }
+      //end of 16 sub key rounds
       //-----------------------------------------------------------------------
-      encrypted_chunk = Rn + Ln;
-      //console.log('pre premuted ' + encrypted_chunk);
-
+      encrypted_chunk = Rn + Ln; //take the output of the rounds and invert the left side and right said and save it in encrypted chucnk variable
+      //do the final inverse permutation on the block
       for (let i = 0; i < IP_N1.length; i++) {
         encrypted_chunk_permutated += encrypted_chunk[IP_N1[i] - 1];
       }
-      //  console.log('encrypted ' + encrypted_chunk_permutated);
     }
-    //
   }
-
+  //add the encrypted block to the encrypted text
   encrypted_text += encrypted_chunk_permutated;
-
+  //convert the encrypted text to hex
   for (let i = 0; i < encrypted_text.length; i += 4) {
     let hexDigit = parseInt(encrypted_text.slice(i, i + 4), 2).toString(16);
     encrypted_text_hex += hexDigit;
   }
-
+  //return the encryted text and the orginal paddings added to it
   return {Encrypted: encrypted_text_hex, padding: textspadding};
 }
 

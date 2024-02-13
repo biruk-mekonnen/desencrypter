@@ -1,3 +1,6 @@
+//the code takes in the encrypted text, padding and keys and returns the decrypted text
+//it is almost exactly the same as the encrypted code(hence symetric encryption) so not much comment in this
+//only on the parts that are different
 import {Buffer} from '@craftzdog/react-native-buffer';
 IP = [
   58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38,
@@ -78,25 +81,24 @@ F_permutation = [
   16, 7, 20, 21, 29, 12, 28, 17, 1, 15, 23, 26, 5, 18, 31, 10, 2, 8, 24, 14, 32,
   27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25,
 ];
-
+//main function5
 function cipherDecryptor(E_msg, keys, padding) {
   let decrypted_text = '';
 
-  //create a buffer to process text as blocks
   const bufferE_msg = Buffer.from(E_msg, 'utf8');
-  const chunkSize = 16;
-  // create a loop to iterate on each block
+  const chunkSize = 16; //block sizes are 16 because we saved that as 16char long hex for each block of encrypted text
+
   for (let a = 0; a < bufferE_msg.length; a += chunkSize) {
+    //E_msg stands for encrypted msg
     let chunkString = '';
     let decrypted_chunk_permutated = '';
     let decrypted_chunk = '';
     let E_msg_binary = '';
     let E_msg_unpermutated = '';
-    //select the block to be processed
+
     const chunk = bufferE_msg.slice(a, a + chunkSize);
     chunkString = chunk.toString('utf8');
 
-    //convert the encrypted msg from hex into binary format and save it into E_msg_binary
     for (let i = 0; i < chunkString.length; i++) {
       let hexDigit = parseInt(chunkString[i], 16).toString(2);
       while (hexDigit.length < 4) {
@@ -104,30 +106,27 @@ function cipherDecryptor(E_msg, keys, padding) {
       }
       E_msg_binary += hexDigit;
     }
-    // console.log(E_msg_binary);
+
     // reverse The final permutation done by using the IP table
+    //the out put of this loop is the same as the encrypted chunk in the encrypter code
     for (let i = 0; i < IP.length; i++) {
       E_msg_unpermutated += E_msg_binary[IP[i] - 1];
     }
 
-    //console.log(E_msg_unpermutated);
-    //call the function slplit the text
     SPlitChunk(E_msg_unpermutated);
-
-    // split the bits in half and swap the left and right sides
 
     function SPlitChunk(E_msg_unpermutated) {
       let Chunktext_E_msg_left = E_msg_unpermutated.slice(0, 32);
       let Chunktext_E_msg_right = E_msg_unpermutated.slice(32, 64);
-      // call the reverse rounding funciotn
+      // call the reverse rounding function
       R_Rounds(Chunktext_E_msg_left, Chunktext_E_msg_right);
     }
 
     function R_Rounds(Chunktext_E_msg_left, Chunktext_E_msg_right) {
-      let keynumber = 16;
+      let keynumber = 16; //ket starts from 16 and goes to 1 to decrypt
       Ln = Chunktext_E_msg_left;
       Rn = Chunktext_E_msg_right;
-      //console.log('right ' + Rn);
+
       for (let d = 1; d <= 16; d++) {
         Rn_expanded = '';
         Rn_Xored = '';
@@ -145,8 +144,6 @@ function cipherDecryptor(E_msg, keys, padding) {
               ? '1'
               : '0';
         }
-        //  console.log('xored ' + Rn_Xored);
-        //console.log(`index${keynumber}`);
 
         //S1
         row_number_S1_box = parseInt(Rn_Xored[0].concat(Rn_Xored[5]), 2);
@@ -207,7 +204,7 @@ function cipherDecryptor(E_msg, keys, padding) {
         for (let h = 0; h < 32; h++) {
           Rn += (Rn_F_out[h] === '1') ^ (Ln_temp[h] === '1') ? '1' : '0';
         }
-        keynumber--;
+        keynumber--; //decrement the key number for the next round
       }
       decrypted_chunk = Rn + Ln;
 
@@ -215,17 +212,16 @@ function cipherDecryptor(E_msg, keys, padding) {
         decrypted_chunk_permutated += decrypted_chunk[IP_N1[i] - 1];
       }
     }
-    console.log('decrypted binary ' + decrypted_chunk_permutated);
 
     decrypted_text += decrypted_chunk_permutated;
   }
-
+  //conver the decrypted text back to ascii characters
   const asciiString = decrypted_text
     .match(/.{8}/g) // Split the binary string into 8-bit segments
     .map(byte => String.fromCharCode(parseInt(byte, 2))) // Convert each 8-bit segment to its ASCII character
     .join('');
-  const orignalmessage = asciiString.slice(0, -padding);
+  const orignalmessage = asciiString.slice(0, -padding); //remove the paddings
 
-  return orignalmessage;
+  return orignalmessage; //return decrypted msg
 }
 export {cipherDecryptor};
